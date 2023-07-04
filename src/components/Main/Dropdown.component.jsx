@@ -3,33 +3,45 @@ import React, { useState } from "react";
 import DeleteModal from "./DeleteModal.component";
 import EditModal from "./EditModal.component";
 
-const Dropdown = ({ options, onOptionSelect, onDeleteCard }) => {
+const Dropdown = ({
+  onOptionSelect,
+  onDeleteCard,
+  selectedCar,
+  setSelectedCar,
+  onEditCar,
+  ...rest
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [selectedCar, setSelectedCar] = useState(null);
+  const [showModalEdit, setShowModalEdit] = useState(false);
+  const [showModalDel, setShowModalDel] = useState(false);
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
   };
 
   const handleOptionSelect = (option) => {
-    setSelectedOption(option);
+    if (option === "Delete") {
+      setShowModalDel(true);
+      setShowModalEdit(false);
+    } else if ((option = "Edit")) {
+      setShowModalEdit(true);
+      setShowModalDel(false);
+    }
+
     setIsOpen(false);
     onOptionSelect(option);
   };
 
   const handleDelete = () => {
     onDeleteCard();
-    setSelectedOption(null);
+
     setIsOpen(false);
   };
 
   const handleEditCar = (car) => {
     setSelectedCar(car);
-    setSelectedOption(null);
+
     setIsOpen(false);
-    setIsEditModalOpen(true);
   };
 
   return (
@@ -48,15 +60,17 @@ const Dropdown = ({ options, onOptionSelect, onDeleteCard }) => {
         </ul>
       )}
       <DeleteModal
-        isOpen={selectedOption === "Delete"}
-        onClose={() => setSelectedOption(null)}
+        isOpen={showModalDel}
+        onClose={() => setShowModalDel(false)}
         onDelete={handleDelete}
       />
       <EditModal
-        isOpen={selectedOption === "Edit"}
-        onClose={() => setSelectedOption(null)}
+        isOpen={showModalEdit}
+        onClose={() => setShowModalEdit(false)}
+        onEditCard={handleEditCar}
         onSave={handleEditCar}
         selectedCar={selectedCar}
+        {...rest}
       />
     </StyledDropdown>
   );

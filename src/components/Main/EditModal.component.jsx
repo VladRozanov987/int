@@ -2,16 +2,18 @@ import React, { useState } from "react";
 import Modal from "react-modal";
 
 const EditModal = ({ isOpen, onClose, onSave, selectedCar }) => {
-  const [color, setColor] = useState(selectedCar?.color || "");
+  const [color, setColor] = useState(selectedCar?.car_color || "");
   const [price, setPrice] = useState(selectedCar?.price || "");
   const [availability, setAvailability] = useState(
     selectedCar?.availability || false
   );
 
+  console.log(`selectedCar`, selectedCar);
+
   const handleSave = () => {
     const updatedCar = {
       ...selectedCar,
-      color: color,
+      car_color: color,
       price: price,
       availability: availability,
     };
@@ -25,18 +27,23 @@ const EditModal = ({ isOpen, onClose, onSave, selectedCar }) => {
       {selectedCar ? (
         <div>
           <label htmlFor="company">Company:</label>
+          <input type="text" id="company" value={selectedCar.car} disabled />
+          <label htmlFor="model">Model:</label>
           <input
             type="text"
-            id="company"
-            value={selectedCar.company}
+            id="model"
+            value={selectedCar.car_model}
             disabled
           />
-          <label htmlFor="model">Model:</label>
-          <input type="text" id="model" value={selectedCar.model} disabled />
           <label htmlFor="vin">VIN:</label>
-          <input type="text" id="vin" value={selectedCar.vin} disabled />
+          <input type="text" id="vin" value={selectedCar.car_vin} disabled />
           <label htmlFor="year">Year:</label>
-          <input type="text" id="year" value={selectedCar.year} disabled />
+          <input
+            type="text"
+            id="year"
+            value={selectedCar.car_model_year}
+            disabled
+          />
           <label htmlFor="color">Color:</label>
           <input
             type="text"
