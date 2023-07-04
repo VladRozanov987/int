@@ -1,61 +1,113 @@
+import { useEffect, useState } from "react";
 // Libs
 import { styled } from "styled-components";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import Modal from "react-modal";
+// Component
 import Pagination from "./Pagination.component";
+import Dropdown from "./Dropdown.component";
+import AddCarModal from "./AddCarModal.component";
 
 const Main = () => {
   const url = "https://myfakeapi.com/api/cars/";
-  const [carsData, setCarsData] = useState([]);
+  const [cars, setCars] = useState([]);
+  const [filteredCars, setFilteredCars] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setModalOpen] = useState(false);
   const carsPerPage = 21;
 
+  Modal.setAppElement("#root");
+
   useEffect(() => {
-    fetchCarsData();
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(url);
+        setCars(response.data.cars);
+        setFilteredCars(response.data.cars);
+      } catch (error) {
+        console.error("Error fetching car data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const fetchCarsData = async () => {
-    try {
-      const response = await axios.get(url);
-      setCarsData(response.data.cars);
-      console.log(response.data.cars);
-    } catch (error) {
-      console.error("Error fetching cars data:", error);
-    }
+  const handleDropdownOption = (option) => {
+    console.log("Selected Option:", option);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+  const handleDeleteCard = (carId) => {
+    setFilteredCars((prevCars) => prevCars.filter((car) => car.id !== carId));
+  };
+
+  const handleSearch = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+    if (query === "") {
+      setFilteredCars(cars);
+    } else {
+      setFilteredCars(
+        cars.filter((car) => car.car.toLowerCase().includes(query))
+      );
+    }
     setCurrentPage(1);
   };
 
+  // Calculate pagination range
+  const indexOfLastCar = currentPage * carsPerPage;
+  const indexOfFirstCar = indexOfLastCar - carsPerPage;
+  const currentCars = filteredCars.slice(indexOfFirstCar, indexOfLastCar);
+
+  // Change page
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  const filteredCars = carsData.filter((car) =>
-    Object.values(car)
-      .join(" ")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+  const toggleModal = () => {
+    setModalOpen(!isModalOpen);
+  };
 
-  const startIndex = (currentPage - 1) * carsPerPage;
-  const endIndex = startIndex + carsPerPage;
-  const carsToShow = filteredCars.slice(startIndex, endIndex);
+  // Function to handle form submission when adding a new car
+  const handleAddCar = (newCarData) => {
+    const newCar = {
+      id: cars.length + 1,
+      car: newCarData.Company,
+      car_model: newCarData.Model,
+      car_vin: newCarData.VIN,
+      car_color: newCarData.Color,
+      car_model_year: newCarData.Year,
+      price: newCarData.Price,
+      availability: newCarData.Availability,
+    };
+
+    toggleModal();
+    setCars((prevCars) => [...prevCars, newCar]);
+    setFilteredCars((prevCars) => [...prevCars, newCar]);
+
+    toggleModal();
+  };
 
   return (
     <StyledMain>
       <h1>Cars List</h1>
-      <input
-        type="text"
-        value={searchTerm}
-        onChange={handleSearchChange}
-        placeholder="Search..."
-      />
+      <div className="col">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search..."
+        />
+        <button onClick={toggleModal}>Add Car</button>
+        <AddCarModal
+          isOpen={isModalOpen}
+          onClose={toggleModal}
+          onAddCar={handleAddCar}
+        />
+      </div>
+
       <div className="grid-container">
-        {carsToShow.map((car) => (
+        {currentCars.map((car) => (
           <div
             className={car.availability ? "card bg-ok" : "card bg-no"}
             key={car.id}
@@ -86,6 +138,11 @@ const Main = () => {
                   : "We don`t have this model =("}
               </p>
             </div>
+            <Dropdown
+              options={["Edit", "Delete"]}
+              onOptionSelect={handleDropdownOption}
+              onDeleteCard={() => handleDeleteCard(car.id)}
+            />
           </div>
         ))}
       </div>
@@ -108,13 +165,19 @@ const StyledMain = styled.div`
   margin: 0 auto;
   padding: 50px 0;
   text-align: center;
-  input {
-    border: none;
-    border-bottom: 1px solid #000;
-    outline: none;
-    margin: 10px 0;
-    width: 20%;
+  .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    input,
+    button {
+      outline: none;
+      margin: 10px 0;
+      width: 20%;
+    }
   }
+
   .grid-container {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -131,6 +194,19 @@ const StyledMain = styled.div`
     }
     .bg-no {
       background-color: #ec8080;
+    }
+    .d-flex {
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      list-style-type: none;
+      button {
+        background-color: transparent;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        margin-top: 10px;
+      }
     }
   }
 `;

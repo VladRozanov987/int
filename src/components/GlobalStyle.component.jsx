@@ -20,6 +20,14 @@ const GlobalStyle = createGlobalStyle`
     display: flex;
     justify-content: space-between;
   }
+  button {
+    padding: 5px;
+    width: 50%;
+    margin: 5px 0;
+  }
+  ul {
+    list-style-type: none
+  }
 `;
 
 export default GlobalStyle;
