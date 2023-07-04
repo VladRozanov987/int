@@ -9,6 +9,7 @@ const Dropdown = ({
   selectedCar,
   setSelectedCar,
   onEditCar,
+  car,
   ...rest
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,13 +35,11 @@ const Dropdown = ({
 
   const handleDelete = () => {
     onDeleteCard();
-
     setIsOpen(false);
   };
 
   const handleEditCar = (car) => {
     setSelectedCar(car);
-
     setIsOpen(false);
   };
 
@@ -69,7 +68,7 @@ const Dropdown = ({
         onClose={() => setShowModalEdit(false)}
         onEditCard={handleEditCar}
         onSave={handleEditCar}
-        selectedCar={selectedCar}
+        data={car}
         {...rest}
       />
     </StyledDropdown>

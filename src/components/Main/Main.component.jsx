@@ -24,15 +24,23 @@ const Main = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(url);
-        setCars(response.data.cars);
-        setFilteredCars(response.data.cars);
-        console.log(response.data.cars);
+        if (response.data.cars) {
+          setCars(response.data.cars);
+          setFilteredCars(response.data.cars);
+          localStorage.setItem("cars", JSON.stringify(response.data.cars));
+        }
       } catch (error) {
         console.error("Error fetching car data:", error);
       }
     };
 
-    fetchData();
+    const storedCars = JSON.parse(localStorage.getItem("cars"));
+    if (storedCars) {
+      setCars(storedCars);
+      setFilteredCars(storedCars);
+    } else {
+      fetchData();
+    }
   }, []);
 
   const handleDropdownOption = (option) => {
@@ -40,12 +48,13 @@ const Main = () => {
   };
 
   const handleDeleteCard = (carId) => {
+    setCars((prevCars) => prevCars.filter((car) => car.id !== carId));
     setFilteredCars((prevCars) => prevCars.filter((car) => car.id !== carId));
+    localStorage.setItem("cars", JSON.stringify(filteredCars));
   };
 
   const handleEditCar = (car) => {
     setSelectedCar(car);
-    console.log(`car`, car);
     openModal();
   };
 
@@ -56,6 +65,7 @@ const Main = () => {
     setFilteredCars((prevCars) =>
       prevCars.map((car) => (car.id === updatedCar.id ? updatedCar : car))
     );
+    localStorage.setItem("cars", JSON.stringify(filteredCars));
     setSelectedCar(null);
   };
 
@@ -161,6 +171,7 @@ const Main = () => {
               onOptionSelect={handleDropdownOption}
               onDeleteCard={() => handleDeleteCard(car.id)}
               selectedCar={selectedCar}
+              car={car}
               setSelectedCar={setSelectedCar}
               onEditCar={handleEditCar}
               onSaveCar={handleSaveCar}
