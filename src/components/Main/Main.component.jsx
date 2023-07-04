@@ -59,12 +59,11 @@ const Main = () => {
   };
 
   const handleSaveCar = (updatedCar) => {
-    setCars((prevCars) =>
-      prevCars.map((car) => (car.id === updatedCar.id ? updatedCar : car))
+    const updatedCars = cars.map((car) =>
+      car.id === updatedCar.id ? updatedCar : car
     );
-    setFilteredCars((prevCars) =>
-      prevCars.map((car) => (car.id === updatedCar.id ? updatedCar : car))
-    );
+    setCars(updatedCars);
+    setFilteredCars(updatedCars);
     localStorage.setItem("cars", JSON.stringify(filteredCars));
     setSelectedCar(null);
   };
