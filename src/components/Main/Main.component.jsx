@@ -14,7 +14,8 @@ const Main = () => {
   const [filteredCars, setFilteredCars] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setModalOpen] = useState();
+  const [selectedCar, setSelectedCar] = useState();
   const carsPerPage = 21;
 
   Modal.setAppElement("#root");
@@ -25,6 +26,7 @@ const Main = () => {
         const response = await axios.get(url);
         setCars(response.data.cars);
         setFilteredCars(response.data.cars);
+        console.log(response.data.cars);
       } catch (error) {
         console.error("Error fetching car data:", error);
       }
@@ -41,6 +43,22 @@ const Main = () => {
     setFilteredCars((prevCars) => prevCars.filter((car) => car.id !== carId));
   };
 
+  const handleEditCar = (car) => {
+    setSelectedCar(car);
+    console.log(`car`, car);
+    openModal();
+  };
+
+  const handleSaveCar = (updatedCar) => {
+    setCars((prevCars) =>
+      prevCars.map((car) => (car.id === updatedCar.id ? updatedCar : car))
+    );
+    setFilteredCars((prevCars) =>
+      prevCars.map((car) => (car.id === updatedCar.id ? updatedCar : car))
+    );
+    setSelectedCar(null);
+  };
+
   const handleSearch = (event) => {
     const query = event.target.value.toLowerCase();
     setSearchQuery(query);
@@ -54,21 +72,19 @@ const Main = () => {
     setCurrentPage(1);
   };
 
-  // Calculate pagination range
-  const indexOfLastCar = currentPage * carsPerPage;
-  const indexOfFirstCar = indexOfLastCar - carsPerPage;
-  const currentCars = filteredCars.slice(indexOfFirstCar, indexOfLastCar);
-
-  // Change page
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  const toggleModal = () => {
-    setModalOpen(!isModalOpen);
+  const openModal = () => {
+    setModalOpen(true);
   };
 
-  // Function to handle form submission when adding a new car
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedCar(null);
+  };
+
   const handleAddCar = (newCarData) => {
     const newCar = {
       id: cars.length + 1,
@@ -81,12 +97,14 @@ const Main = () => {
       availability: newCarData.Availability,
     };
 
-    toggleModal();
     setCars((prevCars) => [...prevCars, newCar]);
     setFilteredCars((prevCars) => [...prevCars, newCar]);
-
-    toggleModal();
+    closeModal();
   };
+
+  const indexOfLastCar = currentPage * carsPerPage;
+  const indexOfFirstCar = indexOfLastCar - carsPerPage;
+  const currentCars = filteredCars.slice(indexOfFirstCar, indexOfLastCar);
 
   return (
     <StyledMain>
@@ -98,10 +116,10 @@ const Main = () => {
           onChange={handleSearch}
           placeholder="Search..."
         />
-        <button onClick={toggleModal}>Add Car</button>
+        <button onClick={openModal}>Add Car</button>
         <AddCarModal
           isOpen={isModalOpen}
-          onClose={toggleModal}
+          onClose={closeModal}
           onAddCar={handleAddCar}
         />
       </div>
@@ -142,6 +160,10 @@ const Main = () => {
               options={["Edit", "Delete"]}
               onOptionSelect={handleDropdownOption}
               onDeleteCard={() => handleDeleteCard(car.id)}
+              selectedCar={selectedCar}
+              setSelectedCar={setSelectedCar}
+              onEditCar={handleEditCar}
+              onSaveCar={handleSaveCar}
             />
           </div>
         ))}
